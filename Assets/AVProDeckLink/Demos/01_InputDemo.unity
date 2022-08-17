@@ -133,7 +133,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 521292315}
-  - component: {fileID: 521292316}
   - component: {fileID: 521292317}
   m_Layer: 0
   m_Name: DeckLink
@@ -157,56 +156,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &521292316
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 521292314}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3de2420ab8a8a3a4195644f0063fa490, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _showExplorer: 0
-  _deviceProfile: 0
-  _deviceIndex: -1
-  _modeIndex: -1
-  _resolutionIndex: -1
-  _enable3D: 0
-  _enableAncillaryData: 0
-  _enableTimeCodeCapture: 0
-  _useHdr: 0
-  _colorspaceMode: 0
-  _audioChannels: 2
-  _audioBitDepth: 16
-  _ignoreAlphaChannel: 1
-  _playOnStart: 1
-  _exactDeviceName: 0
-  _desiredDeviceName: DeckLink
-  _desiredDeviceIndex: -1
-  _exactDeviceIndex: 0
-  _filterDeviceByName: 1
-  _filterDeviceByIndex: 0
-  _filterModeByResolution: 0
-  _filterModeByFormat: 0
-  _filterModeByFPS: 0
-  _filterModeByInterlacing: 0
-  _modeWidth: 1920
-  _modeHeight: 1080
-  _modeFormat: 2
-  _modeFPS: 29.97
-  _modeInterlacing: 0
-  _autoDeinterlace: 1
-  _autoDetectMode: 1
-  _flipX: 0
-  _flipY: 0
-  _audioVolume: 1
-  _muteAudio: 0
-  _bypassGamma: 0
-  _inputBufferCount: 3
-  _inputBufferReadCount: 0
 --- !u!114 &521292317
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,7 +168,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff4669a633a1ca04f88199ba76127598, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  decklinkInput: {fileID: 0}
+  mode: 0
+  display: {fileID: 0}
 --- !u!1001 &880774317
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -358,7 +308,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4316c8fc9594855438a8efd02b520df1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _inputDecklink: {fileID: 521292316}
+  _inputDecklink: {fileID: 0}
   _eye: -1
   _scaleMode: 2
   _color: {r: 1, g: 1, b: 1, a: 1}
