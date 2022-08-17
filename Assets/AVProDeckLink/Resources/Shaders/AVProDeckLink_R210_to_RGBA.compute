@@ -1,0 +1,90 @@
+﻿//-----------------------------------------------------------------------------
+// Copyright 2014-2020 RenderHeads Ltd.  All rights reserved.
+//-----------------------------------------------------------------------------
+
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel R210_to_RGBA
+#pragma kernel R210_to_RGBA OUTPUT_LINEAR
+
+Texture2D<uint4> rawTexture;
+RWTexture2D<float4> result;
+
+struct Parameters{
+	uint width;
+	uint height;
+	uint bufferWidth;
+	uint bigEndian;
+	uint leading;
+	bool isLinear;
+	bool flipX;
+	bool flipY;
+};
+
+RWStructuredBuffer<Parameters> constBuffer;
+
+float3
+ConvertSRGBToLinear(float3 col)
+{
+	if (col.r <= 0.04045)
+		col.r = col.r / 12.92;
+	else
+		col.r = pow((col.r + 0.055) / 1.055, 2.4);
+
+	if (col.g <= 0.04045)
+		col.g = col.g / 12.92;
+	else
+		col.g = pow((col.g + 0.055) / 1.055, 2.4);
+
+	if (col.b <= 0.04045)
+		col.b = col.b / 12.92;
+	else
+		col.b = pow((col.b + 0.055) / 1.055, 2.4);
+
+	return col;
+}
+
+float3
+GetRGBFromR210(uint2 id)
+{
+	// TODO: move flip conditionals out into a variant
+	if (constBuffer[0].flipX)
+	{
+		id.x = (constBuffer[0].width - 1) - id.x;
+	}
+	if (constBuffer[0].flipY)
+	{
+		id.y = (constBuffer[0].height - 1) - id.y;
+	}
+
+	float3 col = 0.0;
+
+	uint4 pix = rawTexture[uint2(id.x, id.y)];
+
+	// xxrrrrrr rrrrgggg ggggggbb bbbbbbbb
+	col.r = ((pix.r & 0x3f) << 4) | ((pix.g & 0xf0) >> 4);
+	col.g = ((pix.g & 0x0f) << 6) | ((pix.b & 0xfc) >> 2);
+	col.b = (pix.a & 0xff) | ((pix.b & 0x03) << 8);
+
+	// R210 has range 64-960 (SMPTE-292)
+	col = (col - 64) / 895.0;
+
+	col = saturate(col);
+
+	return col;
+}
+
+[numthreads(8,8,1)]
+void R210_to_RGBA(uint2 id : SV_DispatchThreadID)
+{
+	float4 col = 1.0;
+
+	col.rgb = GetRGBFromR210(id);
+
+	// TODO: add support for other colourspaces
+
+#if OUTPUT_LINEAR
+	col.rgb = ConvertSRGBToLinear(col.rgb);
+#endif
+
+	result[id.xy] = col;
+}

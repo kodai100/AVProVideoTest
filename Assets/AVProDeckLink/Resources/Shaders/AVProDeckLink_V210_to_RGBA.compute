@@ -1,0 +1,133 @@
+﻿//-----------------------------------------------------------------------------
+// Copyright 2014-2020 RenderHeads Ltd.  All rights reserved.
+//-----------------------------------------------------------------------------
+
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel V210_to_RGBA
+#pragma kernel V210_to_RGBA OUTPUT_LINEAR
+
+Texture2D<float4> rawTexture;
+RWTexture2D<float4> result;
+
+struct Parameters{
+	uint width;
+	uint height;
+	uint bufferWidth;
+	uint bigEndian;
+	uint leading;
+	bool isLinear;
+	bool flipX;
+	bool flipY;
+};
+
+RWStructuredBuffer<Parameters> constBuffer;
+
+float3
+ConvertToRGB_YUV_BT709(float y, float u, float v)
+{
+	float rr = saturate(1.164 * (y - (16.0 / 255.0)) + 1.793 * (u - 0.5));
+	float gg = saturate(1.164 * (y - (16.0 / 255.0)) - 0.534 * (u - 0.5) - 0.213 * (v - 0.5));
+	float bb = saturate(1.164 * (y - (16.0 / 255.0)) + 2.115 * (v - 0.5));
+	return float3(rr, gg, bb);
+}
+
+float3
+ConvertSRGBToLinear(float3 col)
+{
+	if (col.r <= 0.04045)
+		col.r = col.r / 12.92;
+	else
+		col.r = pow((col.r + 0.055) / 1.055, 2.4);
+
+	if (col.g <= 0.04045)
+		col.g = col.g / 12.92;
+	else
+		col.g = pow((col.g + 0.055) / 1.055, 2.4);
+
+	if (col.b <= 0.04045)
+		col.b = col.b / 12.92;
+	else
+		col.b = pow((col.b + 0.055) / 1.055, 2.4);
+
+	return col;
+}
+
+float3
+ConvertToRGB(float3 yCbCr)
+{
+	float3 col = ConvertToRGB_YUV_BT709(yCbCr.x, yCbCr.z, yCbCr.y);
+
+	return col;
+}
+
+float3
+GetYUVFromV210(uint2 id)
+{
+	// TODO: move flip conditionals out into a variant
+	if (constBuffer[0].flipX)
+	{
+		id.x = (constBuffer[0].width - 1) - id.x;
+	}
+	if (constBuffer[0].flipY)
+	{
+		id.y = (constBuffer[0].height - 1) - id.y;
+	}
+
+	float3 yuv = 0.0;
+
+	int x = (id.x / 6) * 4;
+	int column = id.x % 6;
+	if (column == 0)
+	{
+		float3 pix = rawTexture[uint2(x + 0, id.y)].bgr;
+		yuv = float3(pix.gbr);
+	}
+	else if (column == 1)
+	{
+		float3 pix1 = rawTexture[uint2(x + 0, id.y)].bgr;
+		float3 pix2 = rawTexture[uint2(x + 1, id.y)].bgr;
+		yuv = float3(pix2.b, pix1.b, pix1.r);
+	}
+	else if (column == 2)
+	{
+		float3 pix1 = rawTexture[uint2(x + 1, id.y)].bgr;
+		float3 pix2 = rawTexture[uint2(x + 2, id.y)].bgr;
+		yuv = float3(pix1.r, pix1.g, pix2.b);
+	}
+	else if (column == 3)
+	{
+		float3 pix1 = rawTexture[uint2(x + 1, id.y)].bgr;
+		float3 pix2 = rawTexture[uint2(x + 2, id.y)].bgr;
+		yuv = float3(pix2.g, pix1.g, pix2.b);
+	}
+	else if (column == 4)
+	{
+		float3 pix1 = rawTexture[uint2(x + 2, id.y)].bgr;
+		float3 pix2 = rawTexture[uint2(x + 3, id.y)].bgr;
+		yuv = float3(pix2.b, pix1.r, pix2.g);
+	}
+	else if (column == 5)
+	{
+		float3 pix1 = rawTexture[uint2(x + 2, id.y)].bgr;
+		float3 pix2 = rawTexture[uint2(x + 3, id.y)].bgr;
+		yuv = float3(pix2.r, pix1.r, pix2.g);
+	}
+	return yuv;
+}
+
+[numthreads(8,8,1)]
+void V210_to_RGBA(uint2 id : SV_DispatchThreadID)
+{
+	float4 col = 1.0;
+
+	float3 yuv = GetYUVFromV210(id);
+	col.rgb = ConvertToRGB(yuv);
+
+	// TODO: add support for other colourspaces
+
+#if OUTPUT_LINEAR
+	col.rgb = ConvertSRGBToLinear(col.rgb);
+#endif
+
+	result[id.xy] = col;
+}
