@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mode: 0
-  display: {fileID: 0}
+  display: {fileID: 1102179718}
 --- !u!1001 &880774317
 PrefabInstance:
   m_ObjectHideFlags: 0

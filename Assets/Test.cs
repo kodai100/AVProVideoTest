@@ -29,7 +29,7 @@ public class Test : MonoBehaviour
         
         if (prevMode != mode)
         {
-            a.ModeIndex = mode;
+            a.DeviceIndex = mode;
             a.Begin();
         }
 
