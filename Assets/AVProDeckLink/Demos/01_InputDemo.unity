@@ -219,6 +219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff4669a633a1ca04f88199ba76127598, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  decklinkInput: {fileID: 0}
 --- !u!1001 &880774317
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -272,7 +273,6 @@ GameObject:
   - component: {fileID: 1102179716}
   - component: {fileID: 1102179713}
   - component: {fileID: 1102179718}
-  - component: {fileID: 1102179721}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -369,16 +369,3 @@ MonoBehaviour:
   _width: 1
   _height: 1
   _defaultTexture: {fileID: 2800000, guid: c4a90768464ace147bc370ec6092b243, type: 3}
---- !u!114 &1102179721
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1102179712}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 96436e2976484b94980f62237764e527, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _decklink: {fileID: 521292316}
